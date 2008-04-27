@@ -1,0 +1,16 @@
+(require (lib "mred.ss" "mred")
+         (lib "framework.ss" "framework")
+         (lib "class.ss")
+         (lib "etc.ss"))
+
+
+(define f (instantiate frame% ("Dandelion" #f 800 600)))
+(define c (instantiate editor-canvas% (f)))
+(define t (instantiate text% ()))
+(define mb (instantiate menu-bar% (f)))
+(define m-edit (instantiate menu% ("Edit" mb)))
+(define m-font (instantiate menu% ("Font" mb)))
+(append-editor-operation-menu-items m-edit #f)
+(append-editor-font-menu-items m-font)
+(send c set-editor t)
+(send f show #t)
