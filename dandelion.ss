@@ -6,11 +6,11 @@
 
 (define f (instantiate frame% ("Dandelion" #f 800 600)))
 (define c (instantiate editor-canvas% (f)))
-(define t (instantiate text% ()))
+(define p (instantiate pasteboard% ()))
 (define mb (instantiate menu-bar% (f)))
 (define m-edit (instantiate menu% ("Edit" mb)))
 (define m-font (instantiate menu% ("Font" mb)))
 (append-editor-operation-menu-items m-edit #f)
 (append-editor-font-menu-items m-font)
-(send c set-editor t)
+(send c set-editor p)
 (send f show #t)
