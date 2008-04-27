@@ -1,3 +1,5 @@
+;;; Here’s the basic problem: you’re writing a text editor. Stop doing that. It’s 2007. --  Mark Pilgrim
+
 (require (lib "mred.ss" "mred")
          (lib "framework.ss" "framework")
          (lib "class.ss")
