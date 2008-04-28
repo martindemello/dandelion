@@ -6,6 +6,17 @@
          (lib "class.ss")
          (lib "etc.ss"))
 
+(define read-only-text% 
+  (class text%
+    (init-field (insertable? #t))
+    (augment can-insert? can-delete?)
+    (define (can-insert? s l) insertable?)
+    (define (can-delete? s l) #f)
+    (define (caret-hidden?) #t)
+    (define/public (set-insertable b) (set! insertable? b))
+    (super-instantiate ())
+    (send this hide-caret #t)
+    ))
 
 (define f (instantiate frame% ("Dandelion" #f 800 600)))
 (define c (instantiate editor-canvas% (f)))
@@ -16,19 +27,30 @@
 (append-editor-operation-menu-items m-edit #f)
 (append-editor-font-menu-items m-font)
 (send c set-editor p)
-(send f show #t)
+(send p set-dragable #f)
 
 (define lines (readlines "revenge.txt"))
 
+(define hres 24)
 (define i 0)
 (for-each 
  (lambda (line) 
-   (let* ((t (instantiate text% ()))
-          (s (instantiate editor-snip% (t)))
+   (let* ((orig (instantiate read-only-text% ()))
+          (mine (instantiate text% ()))
+          (text (instantiate editor-snip% (orig) (with-border? #f)))
+          (edit (instantiate editor-snip% (mine) (min-width 500)))
           )
-     (send t insert line 0)
-     (send p insert s)
-     (send p move-to s 0 (* i 20))
+     (if (not (equal? line ""))
+         (begin
+           (send orig insert line 0)
+           (send orig set-insertable #f)
+           (send p insert text)
+           (send p move-to text 0 (* i hres))
+           (send p insert edit)
+           (set! i (+ i 1))
+           (send p move-to edit 0 (* i hres))))
      (set! i (+ i 1))
      ))
  lines)
+
+(send f show #t)
