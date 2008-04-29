@@ -18,6 +18,10 @@
       ;; initialize
       (super-instantiate ())
       (send this hide-caret #t)
+      
+      (send this change-style 
+            (send (make-object style-delta% 'change-style 'italic)
+                  set-delta-foreground "gray"))
       (send this lock #t)
       ))
   
@@ -46,6 +50,9 @@
        (if (not (equal? line ""))
            (begin
              (send orig insert-text line)
+             (send mine change-style 
+                   (send (make-object style-delta% 'change-style 'normal)
+                         set-delta-background "SlateGray"))
              (send p insert text)
              (send p move-to text 0 (* i hres))
              (send p insert edit)
