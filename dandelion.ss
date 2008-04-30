@@ -8,21 +8,25 @@
            (lib "class.ss")
            (lib "etc.ss"))
   
+  (define orig-style 
+    (send* (make-object style-delta% 'change-style 'italic)
+      (set-delta-foreground "indigo")
+      (set-delta-background "ghostwhite")
+      ))
+  
   (define read-only-text% 
     (class text:hide-caret/selection%
+      (inherit lock insert hide-caret change-style)
       (init-field (insertable? #t))
       (define/public (insert-text text)
-        (send this lock #f)
-        (send this insert text 0)
-        (send this lock #t))
+        (lock #f)
+        (insert text 0)
+        (lock #t))
       ;; initialize
       (super-instantiate ())
-      (send this hide-caret #t)
-      
-      (send this change-style 
-            (send (make-object style-delta% 'change-style 'italic)
-                  set-delta-foreground "gray"))
-      (send this lock #t)
+      (hide-caret #t)      
+      (change-style orig-style)
+      (lock #t)
       ))
   
   (define f (instantiate frame% ("Dandelion" #f 800 600)))
@@ -45,17 +49,15 @@
      (let* ((orig (instantiate read-only-text% ()))
             (mine (instantiate text% ()))
             (text (instantiate editor-snip% (orig) (with-border? #f)))
-            (edit (instantiate editor-snip% (mine) (min-width 500)))
+            (edit (instantiate editor-snip% (mine) (min-width 500) (with-border? #f)))
             )
        (if (not (equal? line ""))
            (begin
              (send orig insert-text line)
-             (send mine change-style 
-                   (send (make-object style-delta% 'change-style 'normal)
-                         set-delta-background "SlateGray"))
-             (send p insert text)
-             (send p move-to text 0 (* i hres))
-             (send p insert edit)
+             (send* p 
+               (insert text)
+               (move-to text 0 (* i hres))
+               (insert edit))
              (set! i (+ i 1))
              (send p move-to edit 0 (* i hres))))
        (set! i (+ i 1))
