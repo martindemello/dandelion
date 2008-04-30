@@ -4,6 +4,7 @@
   
   (require "utils.ss"
            "components.ss"
+           (lib "43.ss" "srfi")
            (lib "mred.ss" "mred")
            (lib "framework.ss" "framework")
            (lib "class.ss")
@@ -20,27 +21,48 @@
   (send c set-editor p)
   (send p set-dragable #f)
   
-  (define lines (readlines "revenge.txt"))
+  (define lines (list->vector (readlines "revenge.txt")))
+  
+  (define (map-lines f) (vector-map f lines))
+  
+  (define origs 
+    (map-lines
+     (lambda (i line) 
+       (let ((o (instantiate read-only-text% ())))
+         (send o insert-text line)
+         o))))
+  
+  (define mines 
+    (map-lines (lambda (i line) (instantiate text% ()))))
+  
+  (define texts
+    (map-lines (lambda (i line) 
+                 (let ((o (vector-ref origs i)))
+                   (instantiate editor-snip% (o) (with-border? #f))))))
+  
+  (define edits 
+    (map-lines (lambda (i line) 
+                 (let ((m (vector-ref mines i)))
+                   (instantiate editor-snip% (m) (min-width 500) (with-border? #f))))))
   
   (define hres 24)
-  (define i 0)
-  (for-each 
-   (lambda (line) 
-     (let* ((orig (instantiate read-only-text% ()))
-            (mine (instantiate text% ()))
-            (text (instantiate editor-snip% (orig) (with-border? #f)))
-            (edit (instantiate editor-snip% (mine) (min-width 500) (with-border? #f)))
+  (define y 0)
+  (vector-for-each 
+   (lambda (i line) 
+     (let* ((orig (vector-ref origs i))
+            (mine (vector-ref mines i))
+            (text (vector-ref texts i))
+            (edit (vector-ref edits i))
             )
        (if (not (equal? line ""))
            (begin
-             (send orig insert-text line)
              (send* p 
                (insert text)
-               (move-to text 0 (* i hres))
+               (move-to text 0 (* y hres))
                (insert edit))
-             (set! i (+ i 1))
-             (send p move-to edit 0 (* i hres))))
-       (set! i (+ i 1))
+             (set! y (+ y 1))
+             (send p move-to edit 0 (* y hres))))
+       (set! y (+ y 1))
        ))
    lines)
   
