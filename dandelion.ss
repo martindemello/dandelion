@@ -24,26 +24,25 @@
   
   ; create editors for each line in the input file
   (define lines (list->vector (readlines "revenge.txt")))
+  (define (line-vec) (make-vector (vector-length lines)))
   
-  (define (map-lines f) (vector-map f lines))
+  (define origs (line-vec))
+  (define mines (line-vec))
+  (define texts (line-vec))
+  (define edits (line-vec))
   
-  (define origs 
-    (map-lines (lambda (i line) (new read-only-text% (initial-text line)))))
+  ; create editors for original and new lines
+  (vector-for-each
+   (lambda (i line)
+     (vector-set! origs i (new read-only-text% (initial-text line)))
+     (vector-set! mines i (instantiate text% ())))
+   lines)
   
-  (define mines 
-    (map-lines (lambda (i line) (instantiate text% ()))))
-  
-  (define texts
-    (vector-map 
-     (lambda (i orig) 
-       (instantiate editor-snip% (orig) (with-border? #f)))
-     origs))
-  
-  (define edits 
-    (map-lines 
-     (lambda (i line) 
-       (let ((m (vector-ref mines i)))
-         (instantiate editor-snip% (m) (min-width 500) (with-border? #f))))))
+  (vector-for-each
+   (lambda (i line orig mine)
+     (vector-set! texts i (instantiate editor-snip% (orig) (with-border? #f)))
+     (vector-set! edits i (instantiate editor-snip% (mine) (min-width 500) (with-border? #f))))
+   lines origs mines)
   
   ; insert editors into the canvas
   (vector-for-each 
@@ -57,18 +56,18 @@
   (define hres 24)
   
   (define yts
-    (map-lines (lambda (i line) (* 2 i hres))))
+    (vector-map (lambda (i line) (* 2 i hres)) lines))
   
   (define yes
-    (map-lines (lambda (i line) (* (+ (* 2 i) 1) hres))))
+    (vector-map (lambda (i line) (* (+ (* 2 i) 1) hres)) lines))
   
   (define (update-positions)
-      (vector-for-each
-       (lambda (i text edit yt ye)
-         (send* p
-           (move-to text 0 yt)
-           (move-to edit 0 ye)))
-       texts edits yts yes))
+    (vector-for-each
+     (lambda (i text edit yt ye)
+       (send* p
+         (move-to text 0 yt)
+         (move-to edit 0 ye)))
+     texts edits yts yes))
   
   (update-positions)
   
