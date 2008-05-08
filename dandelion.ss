@@ -10,6 +10,7 @@
            (lib "class.ss")
            (lib "etc.ss"))
   
+  ; app gui
   (define f (instantiate frame% ("Dandelion" #f 800 600)))
   (define c (instantiate editor-canvas% (f)))
   (define p (instantiate pasteboard% ()))
@@ -21,6 +22,7 @@
   (send c set-editor p)
   (send p set-dragable #f)
   
+  ; create editors for each line in the input file
   (define lines (list->vector (readlines "revenge.txt")))
   
   (define (map-lines f) (vector-map f lines))
@@ -47,20 +49,32 @@
        (let ((m (vector-ref mines i)))
          (instantiate editor-snip% (m) (min-width 500) (with-border? #f))))))
   
-  (define hres 24)
-  (define y 0)
+  ; insert editors into the canvas
   (vector-for-each 
-   (lambda (i line orig mine text edit) 
-     (if (not (equal? line ""))
-         (begin
-           (send* p 
-             (insert text)
-             (move-to text 0 (* y hres))
-             (insert edit))
-           (set! y (+ y 1))
-           (send p move-to edit 0 (* y hres))))
-     (set! y (+ y 1)))
-   lines origs mines texts edits)
+   (lambda (i text edit) 
+     (send* p 
+       (insert text)
+       (insert edit)))
+   texts edits)
+  
+  ; positioning
+  (define hres 24)
+  
+  (define yts
+    (map-lines (lambda (i line) (* 2 i hres))))
+  
+  (define yes
+    (map-lines (lambda (i line) (* (+ (* 2 i) 1) hres))))
+  
+  (define update-positions (lambda ()
+    (vector-for-each 
+     (lambda (i text edit yt ye) 
+       (send* p
+         (move-to text 0 yt)
+         (move-to edit 0 ye)))
+     texts edits yts yes)))
+  
+  (update-positions)
   
   (send f show #t)
   )
