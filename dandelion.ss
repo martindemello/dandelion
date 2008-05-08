@@ -28,20 +28,16 @@
   (define (map-lines f) (vector-map f lines))
   
   (define origs 
-    (map-lines
-     (lambda (i line) 
-       (let ((o (instantiate read-only-text% ())))
-         (send o insert-text line)
-         o))))
+    (map-lines (lambda (i line) (new read-only-text% (initial-text line)))))
   
   (define mines 
     (map-lines (lambda (i line) (instantiate text% ()))))
   
   (define texts
-    (map-lines 
-     (lambda (i line) 
-       (let ((o (vector-ref origs i)))
-         (instantiate editor-snip% (o) (with-border? #f))))))
+    (vector-map 
+     (lambda (i orig) 
+       (instantiate editor-snip% (orig) (with-border? #f)))
+     origs))
   
   (define edits 
     (map-lines 
@@ -66,13 +62,13 @@
   (define yes
     (map-lines (lambda (i line) (* (+ (* 2 i) 1) hres))))
   
-  (define update-positions (lambda ()
-    (vector-for-each 
-     (lambda (i text edit yt ye) 
-       (send* p
-         (move-to text 0 yt)
-         (move-to edit 0 ye)))
-     texts edits yts yes)))
+  (define (update-positions)
+      (vector-for-each
+       (lambda (i text edit yt ye)
+         (send* p
+           (move-to text 0 yt)
+           (move-to edit 0 ye)))
+       texts edits yts yes))
   
   (update-positions)
   
