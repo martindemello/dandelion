@@ -36,35 +36,31 @@
     (map-lines (lambda (i line) (instantiate text% ()))))
   
   (define texts
-    (map-lines (lambda (i line) 
-                 (let ((o (vector-ref origs i)))
-                   (instantiate editor-snip% (o) (with-border? #f))))))
+    (map-lines 
+     (lambda (i line) 
+       (let ((o (vector-ref origs i)))
+         (instantiate editor-snip% (o) (with-border? #f))))))
   
   (define edits 
-    (map-lines (lambda (i line) 
-                 (let ((m (vector-ref mines i)))
-                   (instantiate editor-snip% (m) (min-width 500) (with-border? #f))))))
+    (map-lines 
+     (lambda (i line) 
+       (let ((m (vector-ref mines i)))
+         (instantiate editor-snip% (m) (min-width 500) (with-border? #f))))))
   
   (define hres 24)
   (define y 0)
   (vector-for-each 
-   (lambda (i line) 
-     (let* ((orig (vector-ref origs i))
-            (mine (vector-ref mines i))
-            (text (vector-ref texts i))
-            (edit (vector-ref edits i))
-            )
-       (if (not (equal? line ""))
-           (begin
-             (send* p 
-               (insert text)
-               (move-to text 0 (* y hres))
-               (insert edit))
-             (set! y (+ y 1))
-             (send p move-to edit 0 (* y hres))))
-       (set! y (+ y 1))
-       ))
-   lines)
+   (lambda (i line orig mine text edit) 
+     (if (not (equal? line ""))
+         (begin
+           (send* p 
+             (insert text)
+             (move-to text 0 (* y hres))
+             (insert edit))
+           (set! y (+ y 1))
+           (send p move-to edit 0 (* y hres))))
+     (set! y (+ y 1)))
+   lines origs mines texts edits)
   
   (send f show #t)
   )
