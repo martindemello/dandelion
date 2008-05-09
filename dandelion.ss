@@ -39,10 +39,10 @@
    lines)
   
   (vector-for-each
-   (lambda (i line orig mine)
+   (lambda (i orig mine)
      (vector-set! texts i (instantiate editor-snip% (orig) (with-border? #f)))
      (vector-set! edits i (instantiate editor-snip% (mine) (min-width 500) (with-border? #f))))
-   lines origs mines)
+   origs mines)
   
   ; insert editors into the canvas
   (vector-for-each 
@@ -58,14 +58,15 @@
   (define yts (line-vec))
   (define yes (line-vec))
   
-  (let ((y 0))
-    (vector-for-each
-     (lambda (i line)
-       (vector-set! yts i (* y hres))
-       (set! y (+ y 1))
-       (vector-set! yes i (* y hres))
-       (set! y (+ y 1)))
-     lines))
+  (define (calculate-positions)
+    (let ((y 0))
+      (vector-for-each
+       (lambda (i orig mine)
+         (vector-set! yts i (* y hres))
+         (set! y (+ y 1 (send orig last-line)))
+         (vector-set! yes i (* y hres))
+         (set! y (+ y 1 (send mine last-line))))
+         origs mines)))
   
   (define (update-positions)
     (vector-for-each
@@ -75,6 +76,7 @@
          (move-to edit 0 ye)))
      texts edits yts yes))
   
+  (calculate-positions)
   (update-positions)
   
   (send f show #t)
