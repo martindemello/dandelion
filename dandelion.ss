@@ -55,11 +55,17 @@
   ; positioning
   (define hres 24)
   
-  (define yts
-    (vector-map (lambda (i line) (* 2 i hres)) lines))
+  (define yts (line-vec))
+  (define yes (line-vec))
   
-  (define yes
-    (vector-map (lambda (i line) (* (+ (* 2 i) 1) hres)) lines))
+  (let ((y 0))
+    (vector-for-each
+     (lambda (i line)
+       (vector-set! yts i (* y hres))
+       (set! y (+ y 1))
+       (vector-set! yes i (* y hres))
+       (set! y (+ y 1)))
+     lines))
   
   (define (update-positions)
     (vector-for-each
