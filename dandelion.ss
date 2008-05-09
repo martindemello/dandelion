@@ -66,7 +66,7 @@
          (set! y (+ y 1 (send orig last-line)))
          (vector-set! yes i (* y hres))
          (set! y (+ y 1 (send mine last-line))))
-         origs mines)))
+       origs mines)))
   
   (define (update-positions)
     (vector-for-each
