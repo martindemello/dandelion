@@ -35,7 +35,7 @@
   (vector-for-each
    (lambda (i line)
      (vector-set! origs i (new read-only-text% (initial-text line)))
-     (vector-set! mines i (instantiate text% ())))
+     (vector-set! mines i (instantiate editable-text% ())))
    lines)
   
   (vector-for-each
