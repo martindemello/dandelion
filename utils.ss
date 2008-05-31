@@ -1,8 +1,9 @@
 ;;; utility functions
 
 (module utils mzscheme
-  (provide readlines)
+  (provide readlines <>)
   
+  ;; filename -> (lines)
   (define (readlines filename)
     (call-with-input-file filename
       (lambda (p)
@@ -10,4 +11,11 @@
                    (result '()))
           (if (eof-object? line)
               (reverse result)
-              (loop (read-line p) (cons line result))))))))
+              (loop (read-line p) (cons line result)))))))
+  
+  ;; <> operator
+  (define (<> x y)
+    (not (= x y)))
+  
+  
+  )

@@ -31,27 +31,6 @@
   (define texts (line-vec))
   (define edits (line-vec))
   
-  ; create editors for original and new lines
-  (vector-for-each
-   (lambda (i line)
-     (vector-set! origs i (new read-only-text% (initial-text line)))
-     (vector-set! mines i (instantiate editable-text% ())))
-   lines)
-  
-  (vector-for-each
-   (lambda (i orig mine)
-     (vector-set! texts i (instantiate editor-snip% (orig) (with-border? #f)))
-     (vector-set! edits i (instantiate editor-snip% (mine) (min-width 500) (with-border? #f))))
-   origs mines)
-  
-  ; insert editors into the canvas
-  (vector-for-each 
-   (lambda (i text edit) 
-     (send* p 
-       (insert text)
-       (insert edit)))
-   texts edits)
-  
   ; positioning
   (define hres 24)
   
@@ -76,8 +55,34 @@
          (move-to edit 0 ye)))
      texts edits yts yes))
   
-  (calculate-positions)
-  (update-positions)
+  (define (update-all)
+    (calculate-positions)
+    (update-positions))
+
+  ; create editors for original and new lines
+  (vector-for-each
+   (lambda (i line)
+     (vector-set! origs i (new read-only-text% (initial-text line)))
+     (vector-set! mines i (new editable-text% (on-height-changed update-all))))
+   lines)
+  
+  (vector-for-each
+   (lambda (i orig mine)
+     (vector-set! texts i (instantiate editor-snip% (orig) (with-border? #f)))
+     (vector-set! edits i (instantiate editor-snip% (mine) (min-width 500) (with-border? #f))))
+   origs mines)
+
+  ; insert editors into the canvas
+  (vector-for-each
+   (lambda (i text edit)
+     (send* p
+       (insert text)
+       (insert edit)))
+   texts edits)
+  
+  
+  
+  (update-all)
   
   (send f show #t)
   )

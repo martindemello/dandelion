@@ -33,12 +33,22 @@
   
   (define editable-text%
     (class text%
+      (init on-height-changed)
+      ;; height acts as a cache for the number of lines
+      ;; so we can tell if insert/delete has changed it
+      (define height 0)
+      (define (set-height) (set! height (last-line)))
+      (define (check-height)
+        (if (<> height (last-line)) (on-height-changed)))
       (inherit last-line)
       (define/public (nlines)
         (+ 1 (last-line)))
+      (define/augment (on-insert a b) (set-height))
+      (define/augment (on-delete a b) (set-height))
+      (define/augment (after-insert a b) (check-height))
+      (define/augment (after-delete a b) (check-height))
+      
       ;; initialize
       (super-instantiate ())
       ))
-  
-  
   )
