@@ -69,8 +69,11 @@
     (cond [(not (= current-edit i))
            (send (edit. current-edit) show-border #f)
            (set! current-edit (cond [(< i 0) 0] [(> i (- n-lines 1)) (- n-lines 1)] [else i]))
-           (send p set-caret-owner (edit. current-edit) 'global)
-           (send (edit. current-edit) show-border #t)]
+           (let ((ed (edit. current-edit)))
+             (send p set-caret-owner ed 'global)
+             (send ed show-border #t)
+             (send p scroll-to ed 0 -360 0 400 #t 'none))
+           ]
           ))
   
   (define (next-edit)
