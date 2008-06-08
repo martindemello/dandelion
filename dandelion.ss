@@ -24,12 +24,16 @@
   
   ; create editors for each line in the input file
   (define lines (list->vector (readlines "revenge.txt")))
-  (define (line-vec) (make-vector (vector-length lines)))
+  (define n-lines (vector-length lines))
+  (define (line-vec) (make-vector n-lines))
   
   (define origs (line-vec))
   (define mines (line-vec))
   (define texts (line-vec))
   (define edits (line-vec))
+  
+  (define (edit. n) (vector-ref edits n))
+  (define (mine. n) (vector-ref mines n))
   
   ; positioning
   (define hres 24)
@@ -58,20 +62,44 @@
   (define (update-all)
     (calculate-positions)
     (update-positions))
-
+  
+  (define current-edit 1)
+  
+  (define (set-active-edit i)
+    (cond [(not (= current-edit i))
+           (send (edit. current-edit) show-border #f)
+           (set! current-edit (cond [(< i 0) 0] [(> i (- n-lines 1)) (- n-lines 1)] [else i]))
+           (send p set-caret-owner (edit. current-edit) 'global)
+           (send (edit. current-edit) show-border #t)]
+          ))
+  
+  (define (next-edit)
+    (set-active-edit (+ 1 current-edit)))
+  
+  (define (prev-edit)
+    (set-active-edit (- current-edit 1)))
+  
   ; create editors for original and new lines
   (vector-for-each
    (lambda (i line)
      (vector-set! origs i (new read-only-text% (initial-text line)))
-     (vector-set! mines i (new editable-text% (on-height-changed update-all))))
+     (vector-set! mines i (new editable-text% 
+                               (on-height-changed update-all)
+                               (next-editor next-edit)
+                               (prev-editor prev-edit)
+                               (set-active (lambda () (set-active-edit i)))
+                               )))
    lines)
   
   (vector-for-each
    (lambda (i orig mine)
-     (vector-set! texts i (instantiate editor-snip% (orig) (with-border? #f)))
-     (vector-set! edits i (instantiate editor-snip% (mine) (min-width 500) (with-border? #f))))
+     (let ((text (instantiate editor-snip% (orig) (min-width 791) (with-border? #f))))
+       (vector-set! texts i text)
+       (send text use-style-background #t)
+       (send text set-style (send the-style-list find-named-style "Original")))
+     (vector-set! edits i (instantiate editor-snip% (mine) (min-width 790) (with-border? #f))))
    origs mines)
-
+  
   ; insert editors into the canvas
   (vector-for-each
    (lambda (i text edit)
@@ -80,9 +108,11 @@
        (insert edit)))
    texts edits)
   
-  
-  
   (update-all)
   
+  ; give the first editor the keyboard focus and caret
+  (set-active-edit 0)
+  
   (send f show #t)
+  
   )
