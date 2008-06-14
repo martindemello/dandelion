@@ -66,7 +66,7 @@
   (define current-edit 1)
   
   (define (set-active-edit i)
-    (cond [(not (= current-edit i))
+    (cond [(<> current-edit i)
            (send (edit. current-edit) show-border #f)
            (set! current-edit (cond [(< i 0) 0] [(> i (- n-lines 1)) (- n-lines 1)] [else i]))
            (let ((ed (edit. current-edit)))
