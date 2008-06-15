@@ -38,13 +38,14 @@
       (init-field next-editor)
       (init-field prev-editor)
       (init-field set-active)
+      (init-field (initial-text ""))
       ;; height acts as a cache for the number of lines
       ;; so we can tell if insert/delete has changed it
       (define height 0)
       (define (set-height) (set! height (last-line)))
       (define (check-height)
         (if (<> height (last-line)) (on-height-changed)))
-      (inherit last-line position-line get-start-position)
+      (inherit last-line position-line get-start-position insert)
       (define (current-line) (position-line (get-start-position)))
       (define (last-line?) (= (current-line) (last-line)))
       (define (first-line?) (= (current-line) 0))
@@ -62,5 +63,6 @@
       
       ;; initialize
       (super-instantiate ())
+      (insert initial-text 0)
       ))
   )

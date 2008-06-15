@@ -4,11 +4,12 @@
   
   (require "utils.ss"
            "components.ss"
-           (lib "43.ss" "srfi")
-           (lib "mred.ss" "mred")
-           (lib "framework.ss" "framework")
-           (lib "class.ss")
-           (lib "etc.ss"))
+           srfi/43
+           mred
+           framework
+           mzlib/class
+           scheme/match
+           scheme/private/for)
   
   ; app gui
   (define f (instantiate frame% ("Dandelion" #f 800 600)))
@@ -22,9 +23,32 @@
   (send c set-editor p)
   (send p set-dragable #f)
   
+  ; read in file into two parallel vectors
+  (define input-file (open-input-file "revenge.dnd"))
+  
+  (define (append-to-car str lst)
+    (cond [(null? lst) (list str)]
+          [else (cons (string-append (car lst) "\n" str) (cdr lst))]))
+  
+  (define-values (read-o read-p _)
+    (for/fold ([o '()] [p '()] [c "# "])
+      ([line (in-lines input-file)])
+      
+      (match (list (substring line 0 2) (substring line 2))
+        [(list "# " rest)
+         (cond [(equal? c "# ") (values (append-to-car rest o) p "# ")]
+               [else            (values (cons rest o) p "# ")])]
+        [(list "= " rest)
+         (cond [(equal? c "= ") (values o (append-to-car rest p) "= ")]
+               [else            (values o (cons rest p) "= ")])])))
+  
+  (close-input-port input-file)
+  
+  (define lines-o (list->vector (reverse read-o)))
+  (define lines-p (list->vector (reverse read-p)))
+  
   ; create editors for each line in the input file
-  (define lines (list->vector (readlines "revenge.txt")))
-  (define n-lines (vector-length lines))
+  (define n-lines (vector-length lines-o))
   (define (line-vec) (make-vector n-lines))
   
   (define origs (line-vec))
@@ -84,15 +108,16 @@
   
   ; create editors for original and new lines
   (vector-for-each
-   (lambda (i line)
+   (lambda (i line mine)
      (vector-set! origs i (new read-only-text% (initial-text line)))
      (vector-set! mines i (new editable-text% 
+                               (initial-text mine)
                                (on-height-changed update-all)
                                (next-editor next-edit)
                                (prev-editor prev-edit)
                                (set-active (lambda () (set-active-edit i)))
                                )))
-   lines)
+   lines-o lines-p)
   
   (vector-for-each
    (lambda (i orig mine)
