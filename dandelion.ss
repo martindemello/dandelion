@@ -15,13 +15,22 @@
   (define f (instantiate frame% ("Dandelion" #f 800 600)))
   (define c (instantiate editor-canvas% (f)))
   (define p (instantiate pasteboard% ()))
-  (define mb (instantiate menu-bar% (f)))
-  (define m-edit (instantiate menu% ("Edit" mb)))
-  (define m-font (instantiate menu% ("Font" mb)))
-  (append-editor-operation-menu-items m-edit #f)
-  (append-editor-font-menu-items m-font)
   (send c set-editor p)
   (send p set-dragable #f)
+  
+  ; file menu callbacks
+  (define (load-file i e) #t)
+  (define (save-file i e) #t)
+  (define (import-file i e) #t)
+  (define (quit-app i e) #t)
+  
+  ; top menu
+  (define mb (instantiate menu-bar% (f)))
+  (define m-file (instantiate menu% ("File" mb)))
+  (define file/open   (instantiate menu-item% ("&Open"   m-file load-file)))
+  (define file/save   (instantiate menu-item% ("&Save"   m-file save-file)))
+  (define file/import (instantiate menu-item% ("&Import" m-file import-file)))
+  (define file/quit   (instantiate menu-item% ("&Quit"   m-file quit-app)))
   
   ; read in file into two parallel vectors
   (define input-file (open-input-file "revenge.dnd"))
