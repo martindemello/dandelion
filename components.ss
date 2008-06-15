@@ -1,5 +1,5 @@
 ;;; gui components
-(module components mzscheme
+(module components scheme
   (provide orig-style-delta read-only-text% editable-text%)
   (require "utils.ss"
            (lib "mred.ss" "mred")
@@ -44,7 +44,7 @@
       (define height 0)
       (define (set-height) (set! height (last-line)))
       (define (check-height)
-        (if (<> height (last-line)) (on-height-changed)))
+        (when (<> height (last-line)) (on-height-changed)))
       (inherit last-line position-line get-start-position insert)
       (define (current-line) (position-line (get-start-position)))
       (define (last-line?) (= (current-line) (last-line)))
@@ -54,7 +54,7 @@
       (define/augment (on-delete a b) (set-height))
       (define/augment (after-insert a b) (check-height))
       (define/augment (after-delete a b) (check-height))
-      (define/override (on-focus on?) (if on? (set-active)))
+      (define/override (on-focus on?) (when on? (set-active)))
       (define/override (on-local-char key)
         (let ([code (send key get-key-code)])
           (cond [(and (equal? code 'down) (last-line?)) (next-editor) ]

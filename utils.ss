@@ -1,6 +1,6 @@
 ;;; utility functions
 
-(module utils mzscheme
+(module utils scheme/base
   (provide <>)
   
   ;; <> operator
