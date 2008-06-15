@@ -1,20 +1,20 @@
 ;;; utility functions
 
-(module utils scheme/base
-  (provide <> append-to-car file->vectors)
-  
-  (require scheme/match)
-  
-  ;; <> operator
-  (define (<> x y)
-    (not (= x y)))
-  
-  ;; append a string to the first string in a list of strings
-  (define (append-to-car str lst)
-    (cond [(null? lst) (list str)]
-          [else (cons (string-append (car lst) "\n" str) (cdr lst))]))
-  
-  (define (file->vectors filename)
+#lang scheme/base
+(provide <> append-to-car file->vectors)
+
+(require scheme/match)
+
+;; <> operator
+(define (<> x y)
+  (not (= x y)))
+
+;; append a string to the first string in a list of strings
+(define (append-to-car str lst)
+  (cond [(null? lst) (list str)]
+        [else (cons (string-append (car lst) "\n" str) (cdr lst))]))
+
+(define (file->vectors filename)
   ; read in file into two parallel vectors
   (let [(input-file (open-input-file filename))]
     (let-values 
@@ -30,4 +30,4 @@
                      [else            (values o (cons rest p) "= ")])]))])
       (close-input-port input-file)
       (list (list->vector (reverse read-o)) (list->vector (reverse read-p))))))
-  )
+
