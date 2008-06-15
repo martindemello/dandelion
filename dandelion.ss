@@ -34,10 +34,6 @@
 ; read in file into two parallel vectors
 (define input-file (open-input-file "revenge.dnd"))
 
-(define (append-to-car str lst)
-  (cond [(null? lst) (list str)]
-        [else (cons (string-append (car lst) "\n" str) (cdr lst))]))
-
 (define-values (read-o read-p _)
   (for/fold ([o '()] [p '()] [c "# "])
     ([line (in-lines input-file)])
