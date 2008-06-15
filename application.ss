@@ -47,7 +47,7 @@
                         (next-editor (λ () (send parent next-editor position)))
                         (prev-editor (λ () (send parent prev-editor position)))
                         (set-active (λ () (send parent set-active-editor position)))))
-
+    
     (define snip (instantiate editor-snip% (editor) (min-width 790) (with-border? #f)))
     (define/override (get-editor) editor)
     (define/override (get-snip) snip)
@@ -62,6 +62,18 @@
     (define canvas (instantiate editor-canvas% (frame)))
     (define pasteboard (instantiate pasteboard% ()))
     (define current-line 1)
+    
+    (define (load-file-prompt i e) #f)
+    (define (save-file-prompt i e) #f)
+    (define (import-file-prompt i e) #f)
+    
+    ; top menu
+    (define mb (instantiate menu-bar% (frame)))
+    (define m-file (instantiate menu% ("&File" mb)))
+    (define file/open   (instantiate menu-item% ("&Open"   m-file load-file-prompt)))
+    (define file/save   (instantiate menu-item% ("&Save"   m-file save-file-prompt)))
+    (define file/import (instantiate menu-item% ("&Import" m-file import-file-prompt)))
+    (define file/quit   (instantiate menu-item% ("&Quit"   m-file (λ (i e) exit:exit))))
     
     (define/public (current-editor)
       (send (vector-ref parodies current-line) get-snip))
