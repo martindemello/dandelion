@@ -42,7 +42,7 @@
     (init-field text)
     
     (define editor (new editable-text% 
-                        (initial-text "text")
+                        (initial-text text)
                         (on-height-changed (λ () (send parent height-changed position)))
                         (next-editor (λ () (send parent next-editor position)))
                         (prev-editor (λ () (send parent prev-editor position)))
