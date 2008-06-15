@@ -8,8 +8,7 @@
          mred
          framework
          scheme/class
-         scheme/match
-         scheme/private/for)
+         scheme/match)
 
 ; app gui
 (define f (instantiate frame% ("Dandelion" #f 800 600)))

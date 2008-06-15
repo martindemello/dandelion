@@ -2,10 +2,7 @@
 (module components scheme
   (provide orig-style-delta read-only-text% editable-text%)
   (require "utils.ss"
-           (lib "mred.ss" "mred")
-           (lib "framework.ss" "framework")
-           (lib "class.ss")
-           (lib "etc.ss"))
+           mred framework scheme/class)
   
   (define orig-style-delta
     (send* (make-object style-delta% 'change-style 'italic)
