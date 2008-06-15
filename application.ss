@@ -55,15 +55,19 @@
 
 (define application%
   (class object%
-    (define originals #f)
-    (define parodies #f)
+    (define originals #())
+    (define parodies #())
+    
     (define n-lines 0)
     (define frame (instantiate frame% ("Dandelion" #f 800 600)))
     (define canvas (instantiate editor-canvas% (frame)))
     (define pasteboard (instantiate pasteboard% ()))
     (define current-line 1)
     
-    (define (load-file-prompt i e) #f)
+    (define (load-file-prompt i e) 
+      (let ((a (finder:get-file #f "Select file" (byte-regexp #".*.dnd") "Not a .dnd file")))
+        (when a (load-file a))))
+    
     (define (save-file-prompt i e) #f)
     (define (import-file-prompt i e) #f)
     
@@ -73,7 +77,7 @@
     (define file/open   (instantiate menu-item% ("&Open"   m-file load-file-prompt)))
     (define file/save   (instantiate menu-item% ("&Save"   m-file save-file-prompt)))
     (define file/import (instantiate menu-item% ("&Import" m-file import-file-prompt)))
-    (define file/quit   (instantiate menu-item% ("&Quit"   m-file (λ (i e) exit:exit))))
+    (define file/quit   (instantiate menu-item% ("&Quit"   m-file (λ (i e) (exit:exit)))))
     
     (define/public (current-editor)
       (send (vector-ref parodies current-line) get-snip))
@@ -104,6 +108,8 @@
       (new parody% (parent this) (position line) (text text)))
     
     (define/public (load-file filename)
+      (send pasteboard begin-edit-sequence)
+      (delete-all)
       (match-let ([(list origs pars) (file->vectors filename)])
         (set! n-lines (vector-length origs))
         (set! originals (make-vector n-lines))
@@ -116,7 +122,14 @@
             (send pasteboard insert (send orig get-snip))
             (send pasteboard insert (send par get-snip))))
         (update-all)
-        (set-active-line 0)))
+        (set-active-line 0)
+        (send pasteboard end-edit-sequence)
+        ))
+    
+    (define (delete-all)
+      (for ([o (in-vector originals)] [p (in-vector parodies)])
+        (send pasteboard delete (send o get-snip))
+        (send pasteboard delete (send p get-snip))))
     
     (define (update-all)
       (let ((y 0.0))
