@@ -134,7 +134,3 @@
     (send canvas set-editor pasteboard)
     (send pasteboard set-dragable #f)
     ))
-
-(define app (new application%))
-(send app load-file "revenge.dnd")
-(send app show)
