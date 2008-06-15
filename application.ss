@@ -47,6 +47,7 @@
                         (next-editor (λ () (send parent next-editor position)))
                         (prev-editor (λ () (send parent prev-editor position)))
                         (set-active (λ () (send parent set-active-editor position)))))
+
     (define snip (instantiate editor-snip% (editor) (min-width 790) (with-border? #f)))
     (define/override (get-editor) editor)
     (define/override (get-snip) snip)
@@ -102,7 +103,8 @@
             (vector-set! parodies i par)
             (send pasteboard insert (send orig get-snip))
             (send pasteboard insert (send par get-snip))))
-        (update-all)))
+        (update-all)
+        (set-active-line 0)))
     
     (define (update-all)
       (let ((y 0.0))
