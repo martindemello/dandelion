@@ -33,6 +33,8 @@
     (send snip set-style (send the-style-list find-named-style "Original"))
     (define/override (get-editor) editor)
     (define/override (get-snip) snip)
+    (define/public (save-text) (prefix-lines "# " (send editor get-text)))
+    
     (super-new)))
 
 (define parody%
@@ -51,6 +53,8 @@
     (define snip (instantiate editor-snip% (editor) (min-width 790) (with-border? #f)))
     (define/override (get-editor) editor)
     (define/override (get-snip) snip)
+    (define/public (save-text) (prefix-lines "= " (send editor get-text)))
+    
     (super-new)))
 
 (define application%
@@ -64,20 +68,28 @@
     (define pasteboard (instantiate pasteboard% ()))
     (define current-line 1)
     
+    (define/public (get-originals) originals)
+    (define/public (get-parodies) parodies)
+    
     (define (load-file-prompt i e) 
       (let ((a (finder:get-file #f "Select file" (byte-regexp #".*.dnd") "Not a .dnd file")))
         (when a (load-file a))))
     
-    (define (save-file-prompt i e) #f)
+    (define (save-file-prompt i e) 
+      (let ((a (finder:put-file)))
+        (when a (save-file a))))
+    
+    (define (save-current-file i e) #f)
     (define (import-file-prompt i e) #f)
     
     ; top menu
     (define mb (instantiate menu-bar% (frame)))
     (define m-file (instantiate menu% ("&File" mb)))
-    (define file/open   (instantiate menu-item% ("&Open"   m-file load-file-prompt)))
-    (define file/save   (instantiate menu-item% ("&Save"   m-file save-file-prompt)))
-    (define file/import (instantiate menu-item% ("&Import" m-file import-file-prompt)))
-    (define file/quit   (instantiate menu-item% ("&Quit"   m-file (λ (i e) (exit:exit)))))
+    (define file/open    (instantiate menu-item% ("&Open"      m-file load-file-prompt)))
+    (define file/save    (instantiate menu-item% ("&Save"      m-file save-current-file)))
+    (define file/save-as (instantiate menu-item% ("Save &As"   m-file save-file-prompt)))
+    (define file/import  (instantiate menu-item% ("&Import"    m-file import-file-prompt)))
+    (define file/quit    (instantiate menu-item% ("&Quit"      m-file (λ (i e) (exit:exit)))))
     
     (define/public (current-editor)
       (send (vector-ref parodies current-line) get-snip))
@@ -125,6 +137,15 @@
         (set-active-line 0)
         (send pasteboard end-edit-sequence)
         ))
+    
+    (define/public (save-file filename)
+      (call-with-output-file filename #:exists 'truncate
+        (λ (out)
+          (for ([o (in-vector originals)] [p (in-vector parodies)])
+            (display (send o save-text) out)
+            (newline out)
+            (display (send p save-text) out)
+            (newline out)))))
     
     (define (delete-all)
       (for ([o (in-vector originals)] [p (in-vector parodies)])

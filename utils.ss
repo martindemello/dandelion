@@ -1,7 +1,7 @@
 ;;; utility functions
 
-#lang scheme/base
-(provide <> append-to-car file->vectors)
+#lang scheme
+(provide <> append-to-car file->vectors prefix-lines)
 
 (require scheme/match)
 
@@ -31,3 +31,5 @@
       (close-input-port input-file)
       (list (list->vector (reverse read-o)) (list->vector (reverse read-p))))))
 
+(define (prefix-lines prefix string)
+  (string-join (map (λ (s) (string-append prefix s)) (regexp-split #rx"\n" string)) "\n"))

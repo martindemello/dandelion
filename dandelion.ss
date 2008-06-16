@@ -5,5 +5,4 @@
 (require "application.ss")
 
 (define app (new application%))
-;(send app load-file "revenge.dnd")
 (send app show)
