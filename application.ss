@@ -67,6 +67,7 @@
     (define canvas (instantiate editor-canvas% (frame)))
     (define pasteboard (instantiate pasteboard% ()))
     (define current-line 1)
+    (define current-file #f)
     
     (define/public (get-originals) originals)
     (define/public (get-parodies) parodies)
@@ -79,7 +80,11 @@
       (let ((a (finder:put-file)))
         (when a (save-file a))))
     
-    (define (save-current-file i e) #f)
+    (define (save-current-file i e) 
+      (if current-file 
+          (save-file current-file)
+          (save-file-prompt #f #f)))
+          
     (define (import-file-prompt i e) #f)
     
     ; top menu
@@ -136,6 +141,7 @@
         (update-all)
         (set-active-line 0)
         (send pasteboard end-edit-sequence)
+        (set! current-file filename)
         ))
     
     (define/public (save-file filename)
