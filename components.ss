@@ -12,12 +12,25 @@
     (set-delta-foreground "indigo")
     ))
 
+(define editor-keymap
+  (let ((keymap (make-object keymap%)))
+    (add-text-keymap-functions keymap)
+    (send keymap map-function "c:left" "backward-word")
+    (send keymap map-function "c:right" "forward-word")
+    (send keymap map-function "s:c:left" "backward-select-word")
+    (send keymap map-function "s:c:right" "forward-select-word")
+    (send keymap map-function "c:insert" "copy-clipboard")
+    (send keymap map-function "s:insert" "paste-clipboard")
+    (send keymap map-function "c:z" "undo")
+    (send keymap map-function "c:y" "redo")
+    keymap))
+
 (send (send the-style-list new-named-style "Original" (send the-style-list basic-style))
       set-delta orig-style-delta)
 
 (define read-only-text% 
   (class text:hide-caret/selection%
-    (inherit lock insert hide-caret change-style last-line)
+    (inherit lock insert hide-caret change-style last-line set-keymap)
     (init-field (initial-text ""))
     (define/public (insert-text text)
       (lock #f)
@@ -26,6 +39,7 @@
     (define/public (nlines) (+ 1 (last-line)))
     ;; initialize
     (super-instantiate ())
+    (set-keymap editor-keymap)
     (hide-caret #t)      
     (insert-text initial-text)
     (lock #t)
@@ -44,7 +58,7 @@
     (define (set-height) (set! height (last-line)))
     (define (check-height)
       (when (<> height (last-line)) (on-height-changed)))
-    (inherit last-line position-line get-start-position insert)
+    (inherit last-line position-line get-start-position insert set-keymap)
     (define (current-line) (position-line (get-start-position)))
     (define (last-line?) (= (current-line) (last-line)))
     (define (first-line?) (= (current-line) 0))
@@ -62,5 +76,6 @@
     
     ;; initialize
     (super-instantiate ())
+    (set-keymap editor-keymap)
     (insert initial-text 0)
     ))

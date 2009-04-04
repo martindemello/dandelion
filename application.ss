@@ -43,12 +43,13 @@
     (init-field position)
     (init-field text)
     
-    (define editor (new editable-text% 
-                        (initial-text text)
-                        (on-height-changed (λ () (send parent height-changed position)))
-                        (next-editor (λ () (send parent next-editor position)))
-                        (prev-editor (λ () (send parent prev-editor position)))
-                        (set-active (λ () (send parent set-active-editor position)))))
+    (define editor 
+      (new editable-text% 
+           (initial-text text)
+           (on-height-changed (λ () (send parent height-changed position)))
+           (next-editor (λ () (send parent next-editor position)))
+           (prev-editor (λ () (send parent prev-editor position)))
+           (set-active (λ () (send parent set-active-editor position)))))
     
     (define snip (instantiate editor-snip% (editor) (min-width 790) (with-border? #f)))
     (define/override (get-editor) editor)
@@ -84,7 +85,7 @@
       (if current-file 
           (save-file current-file)
           (save-file-prompt #f #f)))
-          
+    
     (define (import-file-prompt i e) #f)
     
     ; top menu
