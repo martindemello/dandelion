@@ -74,7 +74,7 @@
     (define/public (get-parodies) parodies)
     
     (define (load-file-prompt i e) 
-      (let ((a (finder:get-file #f "Select file" (byte-regexp #".*.dnd") "Not a .dnd file")))
+      (let ((a (finder:get-file #f "Load file" (byte-regexp #".*.dnd") "Not a .dnd file")))
         (when a (load-file a))))
     
     (define (save-file-prompt i e) 
@@ -86,7 +86,9 @@
           (save-file current-file)
           (save-file-prompt #f #f)))
     
-    (define (import-file-prompt i e) #f)
+    (define (import-file-prompt i e) 
+      (let ((a (finder:get-file #f "Import file" (byte-regexp #".*.txt") "Can only import files of type .txt")))
+        (when a (import-file a))))   
     
     ; top menu
     (define mb (instantiate menu-bar% (frame)))
@@ -146,6 +148,11 @@
       (let-values ([(origs pars) (call-with-input-file filename collect)])
         (load-lines origs pars))
       (set! current-file filename))
+    
+    (define/public (import-file filename)
+      (let* ([origs (call-with-input-file filename port->lines)]
+             [pars (map (λ (x) "") origs)])
+        (load-lines (list->vector origs) (list->vector pars))))
     
     (define/public (save-file filename)
       (call-with-output-file filename #:exists 'truncate
