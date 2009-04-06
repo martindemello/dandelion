@@ -128,7 +128,7 @@
     (define/public (load-file filename)
       (send pasteboard begin-edit-sequence)
       (delete-all)
-      (match-let ([(list origs pars) (file->vectors filename)])
+      (let-values ([(origs pars) (call-with-input-file filename collect)])
         (set! n-lines (vector-length origs))
         (set! originals (make-vector n-lines))
         (set! parodies  (make-vector n-lines))
