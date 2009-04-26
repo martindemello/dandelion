@@ -136,6 +136,7 @@
       (for ([i (in-naturals)] [o (in-vector origs)] [p (in-vector pars)])
            (let ((orig (make-original o i))
                  (par (make-parody p i)))
+             (send (send par get-editor) clear-undos)
              (vector-set! originals i orig)
              (vector-set! parodies i par)
              (send pasteboard insert (send orig get-snip))

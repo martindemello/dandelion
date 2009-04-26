@@ -58,7 +58,7 @@
     (define (set-height) (set! height (last-line)))
     (define (check-height)
       (when (<> height (last-line)) (on-height-changed)))
-    (inherit last-line position-line get-start-position insert set-keymap)
+    (inherit last-line position-line get-start-position insert set-keymap set-max-undo-history clear-undos)
     (define (current-line) (position-line (get-start-position)))
     (define (last-line?) (= (current-line) (last-line)))
     (define (first-line?) (= (current-line) 0))
@@ -77,5 +77,6 @@
     ;; initialize
     (super-instantiate ())
     (set-keymap editor-keymap)
+    (set-max-undo-history 'forever)
     (insert initial-text 0)
     ))
