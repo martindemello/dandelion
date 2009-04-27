@@ -15,14 +15,16 @@
 (define editor-keymap
   (let ((keymap (make-object keymap%)))
     (add-text-keymap-functions keymap)
+    (send keymap add-function "global-undo" (λ (e p) (send e global-undo)))
+    (send keymap add-function "global-redo" (λ (e p) (send e global-redo)))
     (send keymap map-function "c:left" "backward-word")
     (send keymap map-function "c:right" "forward-word")
     (send keymap map-function "s:c:left" "backward-select-word")
     (send keymap map-function "s:c:right" "forward-select-word")
     (send keymap map-function "c:insert" "copy-clipboard")
     (send keymap map-function "s:insert" "paste-clipboard")
-    (send keymap map-function "c:z" "undo")
-    (send keymap map-function "c:y" "redo")
+    (send keymap map-function "c:z" "global-undo")
+    (send keymap map-function "c:y" "global-redo")
     keymap))
 
 (send (send the-style-list new-named-style "Original" (send the-style-list basic-style))
@@ -51,14 +53,17 @@
     (init-field next-editor)
     (init-field prev-editor)
     (init-field set-active)
+    (init-field application)
     (init-field (initial-text ""))
+    
     ;; height acts as a cache for the number of lines
     ;; so we can tell if insert/delete has changed it
     (define height 0)
     (define (set-height) (set! height (last-line)))
     (define (check-height)
       (when (<> height (last-line)) (on-height-changed)))
-    (inherit last-line position-line get-start-position insert set-keymap set-max-undo-history clear-undos)
+    (inherit last-line position-line get-start-position insert set-keymap 
+             set-max-undo-history clear-undos set-paste-text-only)
     (define (current-line) (position-line (get-start-position)))
     (define (last-line?) (= (current-line) (last-line)))
     (define (first-line?) (= (current-line) 0))
@@ -67,16 +72,19 @@
     (define/augment (on-delete a b) (set-height))
     (define/augment (after-insert a b) (check-height))
     (define/augment (after-delete a b) (check-height))
+    (define/augment (on-change) (send application add-undo this))
     (define/override (on-focus on?) (when on? (set-active)))
     (define/override (on-local-char key)
       (let ([code (send key get-key-code)])
         (cond [(and (equal? code 'down) (last-line?)) (next-editor) ]
               [(and (equal? code 'up) (first-line?)) (prev-editor) ]
               [else (super on-local-char key)])))
-    
+    (define/public (global-undo) (send application undo))
+    (define/public (global-redo) (send application redo))
     ;; initialize
     (super-instantiate ())
     (set-keymap editor-keymap)
     (set-max-undo-history 'forever)
+    (set-paste-text-only #t)
     (insert initial-text 0)
     ))
