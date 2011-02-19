@@ -2,6 +2,7 @@
 
 (require "utils.ss"
          "components.ss"
+         "datastructures.ss"
          srfi/43
          mred
          framework
@@ -75,33 +76,10 @@
     (define/public (get-parodies) parodies)
     
     ;; maintain a global undo/redo stack
-    (define undo-stack '())
-    (define redo-stack '())
-    
-    (define/public (add-undo editor)
-      (set! undo-stack (cons editor undo-stack))
-      (set! redo-stack '()))
-    
-    ; TODO - use a rotate-stack macro to implement pop-undo and pop-redo
-    (define (pop-undo)
-      (let ([editor (car undo-stack)])
-        (set! undo-stack (cdr undo-stack))
-        (set! redo-stack (cons editor redo-stack))
-        editor))
-    
-    (define (pop-redo)
-      (let ([editor (car redo-stack)])
-        (set! redo-stack (cdr redo-stack))
-        (set! undo-stack (cons editor undo-stack))
-        editor))
-    
-    (define/public (undo)
-      (let ([editor (pop-undo)])
-        (send editor undo)))
-    
-    (define/public (redo)
-      (let ([editor (pop-redo)])
-        (send editor redo)))          
+    (define undo-stack (new hierarchical-undo-stack%))
+    (define/public (add-undo editor) (send undo-stack add-undo editor))    
+    (define/public (undo) (send undo-stack undo)) 
+    (define/public (redo) (send undo-stack redo)) 
     
     (define (load-file-prompt i e) 
       (let ((a (finder:get-file #f "Load file" (byte-regexp #".*.dnd") "Not a .dnd file")))
